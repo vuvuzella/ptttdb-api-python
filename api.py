@@ -27,9 +27,9 @@ class DrugResource(Resource):
     strResult = ''
     for index in range(len(drugInfo)):
       row = drugInfo[index]
-      strResult += row['field1'] + ' ' + \
-      row['drugstore'] + ' ' + \
-      str(row['selling_price'])
+      strResult += row['field1'] + '|' + \
+      row['drugstore'] + '|' + \
+      str(row['selling_price']) + '||'
       # for k, v in drugInfo[index]:
       #   row += v + ' '
       #   row += '\n'
