@@ -63,23 +63,17 @@ def seekToStartLine(dbFileDesc, tableName):
   regExSearch = re.compile(r"^.*" + tableName + r".$", re.I)
   print "Searching for", tableName
 
-  for readLine in dbFileDesc:
+  readLine = dbFileDesc.readline()
+  # for readLine in dbFileDesc:
+  while readLine != '': # This is SLOW!!
     print line
-    if regExSearch.search("-- Table structure 'tbl_calapan_mst'\n") != None:
+    if regExSearch.search(readLine) != None:
       print readLine
       print line
       return 1
     line += 1
+    readLine = dbFileDesc.readline()
 
-  # while readLine is not "":
-  #   print line
-  #   # if readLine.find(tableName) >= 0:
-  #   if regExSearch.search(readLine, re.I) != None:
-  #     print readLine
-  #     print line
-  #     return 1
-  #   readLine = dbFileDesc.readline()
-  #   line += 1
   print tableName, "is not Found"
   dbFileDesc.seek(0)
   return -1
@@ -116,13 +110,66 @@ def main(args):
 
   # Open File if it exists
   dbFileDesc = openDb(fileDir)
-  if seekToStartLine(dbFileDesc, tableName) > 0:
+  seekResult = seekToStartLine(dbFileDesc, tableName)
+  if seekResult >= 0:
     # tableName is found
-    print "table is found"
-    # print dbFileDesc.readline()
+    # Read DELETE sql and execute
+    # Read CREATE sql and execute
+    # Create an sql line creator and searcher function
+    readLine = dbFileDesc.readline()
+    while readLine[0:4] != "DROP":
+      readLine = dbFileDesc.readline()
+    sql = readLine
+
+    # execute sql
+    print sql
+
+    sql = ""
+    readLine = dbFileDesc.readline()
+    while readLine.strip()[-1:] != ";":
+      sql += readLine
+      readLine = dbFileDesc.readline()
+
+    sql += readLine
+
+    # execute sql
+    print sql
+    sql = ""
+
+    """
+    1. Set readLine to be the next line
+    2. While readLine is not equal to "-- -"
+      2.1. if readLine is INSERT:
+        2.1.1 set sql to be readLine
+        2.1.2 While readLine does not have ';' set readLine to be the next line
+          2.1.2.1 Append readLine to sql
+        2.1.3 Execute sql
+        2.1.4 Set sql to empty string
+      2.2 Else, readLine to be the next line
+    """
+    readLine = dbFileDesc.readline()
+    while readLine[0:4] != "-- -":
+      if readLine[0:6] == "INSERT":
+        sql += readLine
+        readLine = dbFileDesc.readline()
+        while readLine.strip()[-1:] != ";":
+          sql += readLine
+          readLine = dbFileDesc.readline()
+        sql += readLine
+        print sql
+        break
+        sql = ""
+        readLine = dbFileDesc.readline()
+      else:
+        readLine = dbFileDesc.readline()
+
   else:
+    print "table is found"
+    # print dbFileDesc.next()
+    print dbFileDesc.readline()
     print "table is not found"
-    # print dbFileDesc.readline()
+    # print dbFileDesc.next()
+    print dbFileDesc.readline()
 
   dbFileDesc.close()
 
