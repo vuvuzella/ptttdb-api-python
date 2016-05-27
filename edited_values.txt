@@ -1,0 +1,34 @@
+Edited values in ptttdb to be able to convert from mysql to sqlite3
+successfully.
+
+tbl_calapan_mst
+line: 1843, 4th value
+from: "ATS 1,"
+  to: "ATS 1 "
+
+line: 2140 - 3860 9th value
+from: "BRGY. CAMILMIL, CALAPAN, ORIENTAL MINDORO"
+  to: "BRGY. CAMILMIL CALAPAN ORIENTAL MINDORO"
+
+line: 2355 - 2615, 9th value
+from: "BRGY. STA. ISABEL, CALAPAN, ORIENTAL MINDOROR"
+  to: "BRGY. STA. ISABEL CALAPAN ORIENTAL MINDOROR"
+
+line: 2616 - 2720, 9th value
+from: "JP RIZAL ST., SAN VICENTE EAST, CALAPAN, ORIENTAL MINDORO"
+  to: "JP RIZAL ST. SAN VICENTE EAST CALAPAN ORIENTAL MINDORO"
+
+-------------------------------------------------------------------
+line: 647, 4th value
+from: "CENTRUM SILVER 30''S"
+  to: "CENTRUM SILVER 30S"
+
+line: 666, 4th value
+from: "CHERIFER PREMIUM 10''S CAPSULE"
+  to: "CHERIFER PREMIUM 10S CAPSULE'"
+
+line: 708, 4th value
+from: "CLUSIVOL 15''S CAPSULE"
+  to: "CLUSIVOL 15S CAPSULE"
+
+line 777

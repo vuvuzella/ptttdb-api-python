@@ -7,8 +7,11 @@ from flask_restful import Resource, Api
 from pymysql import cursors
 from decimal import Decimal
 
+import re
+import sys
 import json
 import pymysql
+import sqlite3
 
 app = Flask(__name__)
 api = Api(app)
@@ -37,29 +40,43 @@ class DrugResource(Resource):
     return strResult
     # return {}
 
+  def regexp(self, expr, item):
+    try:
+      reg = re.compile("biogesic", re.I)
+    except:
+      print "Regexp Error occurred:"
+    return reg.search(item) is not None
+
   def getDrugInfo(self, drugName):
-    connection = pymysql.connect(host='localhost',
-                                 user='root',
-                                 password='0jonats',
-                                 db='ptttdb',
-                                 charset='utf8',
-                                 cursorclass=pymysql.cursors.DictCursor)
+    # Database connection
+    # connection = pymysql.connect(host='localhost',
+    #                              user='root',
+    #                              password='0jonats',
+    #                              db='ptttdb',
+    #                              charset='utf8',
+    #                              cursorclass=pymysql.cursors.DictCursor)
+    connection = sqlite3.connect('data/ptttdb.sqlite3')
     result = []
 
     try:
+      # from
+      # http://stackoverflow.com/questions/5365451/problem-with-regexp-python-and-sqlite
+      connection.create_function("REGEXP", 2, self.regexp)
       # 'with' -
       # http://preshing.com/20110920/the-python-with-statement-by-example/
-      with connection.cursor() as cursor:
-        print 'searching for', drugName
-        # sql = 'SELECT `field1`, `drugstore`, `selling_price` FROM `tbl_calapan_mst` WHERE `field1` REGEXP `%s`'
-        sql = 'SELECT field1, drugstore, selling_price FROM tbl_calapan_mst WHERE field1 REGEXP %s'
-        cursor.execute(sql, (drugName))
-        result = cursor.fetchall()
-        print result
-        print type(result)
-    except:
+      # with connection.cursor() as cursor:
+      cursor = connection.cursor()
+      print 'searching for', drugName
+      # sql = 'SELECT `field1`, `drugstore`, `selling_price` FROM `tbl_calapan_mst` WHERE `field1` REGEXP `%s`'
+      sql = 'SELECT field1, drugstore, selling_price FROM tbl_calapan_mst WHERE field1 REGEXP (?)'
+      drugName = "biogesic"
+      cursor.execute(sql, (drugName,))
+      result = cursor.fetchall()
+      print "Resut:", result
+      print type(result)
+    except sqlite3.Error as e:
       # do nothing
-      print 'Error occurred'
+      print 'getDrugInfo Error occurred:', e.args[0]
       pass
     finally:
       connection.close()

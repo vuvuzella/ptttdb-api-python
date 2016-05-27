@@ -66,10 +66,8 @@ def seekToStartLine(dbFileDesc, tableName):
   readLine = dbFileDesc.readline()
   # for readLine in dbFileDesc:
   while readLine != '': # This is SLOW!!
-    print line
     if regExSearch.search(readLine) != None:
       print readLine
-      print line
       return 1
     line += 1
     readLine = dbFileDesc.readline()
@@ -77,6 +75,28 @@ def seekToStartLine(dbFileDesc, tableName):
   print tableName, "is not Found"
   dbFileDesc.seek(0)
   return -1
+
+def executeSql(sqlString):
+  """
+  Connect to sqlite
+  Execute sql string
+  Disconnect from sqlite
+  """
+  cwd = os.getcwd()
+  dataDir = "/data/ptttdb.sqlite3"
+  connection = sqlite3.connect(cwd + dataDir)
+  cursor = connection.cursor()
+  print "Executing:"
+  print sqlString
+  cursor.execute(sqlString)
+  connection.commit()
+  connection.close()
+
+def countColumns(sql):
+  pattern = r"\((`.*`)+\)"
+  matcher = re.compile(pattern, re.I)
+  result = matcher.search(sql).group(0).split()
+  return len(result)
 
 def main(args):
   # Initial set-ups
@@ -122,7 +142,7 @@ def main(args):
     sql = readLine
 
     # execute sql
-    print sql
+    executeSql(sql)
 
     sql = ""
     readLine = dbFileDesc.readline()
@@ -133,7 +153,7 @@ def main(args):
     sql += readLine
 
     # execute sql
-    print sql
+    executeSql(sql)
     sql = ""
 
     """
@@ -145,22 +165,65 @@ def main(args):
           2.1.2.1 Append readLine to sql
         2.1.3 Execute sql
         2.1.4 Set sql to empty string
+        -------------------------------
+        Alternative - Fix for sqlite3's inability to handle multiple insert
+        values.
+        -------------------------------
+        2.1.1. set sql to be readLine
+        2.1.2. if readLine contains "INSERT", then
+          2.1.2.1. set sql to be the value of readLine
+          2.1.2.2. Count the number of variable readLine contains and set as
+          columnCount.
+          2.1.2.2. Append ` (%s);` with the number of %s to be that of the value
+          of columnCount, to sql.
+          2.1.2.3. while readLine does not contain ';'
+            2.1.2.3.1. set readLine to be the next line
+            2.1.2.3.2. Trim readLine of the comma at the end of the string and
+            set to trimmedValue
+            2.1.2.3.3. Execute sql using the value of trimmedValue
       2.2 Else, readLine to be the next line
     """
     readLine = dbFileDesc.readline()
     while readLine[0:4] != "-- -":
       if readLine[0:6] == "INSERT":
-        sql += readLine
-        readLine = dbFileDesc.readline()
-        while readLine.strip()[-1:] != ";":
-          sql += readLine
-          readLine = dbFileDesc.readline()
-        sql += readLine
-        print sql
-        break
-        sql = ""
-        readLine = dbFileDesc.readline()
+        # sql += readLine
+        # readLine = dbFileDesc.readline()
+        # while readLine.strip()[-1:] != ";":
+        #   sql += readLine
+        #   readLine = dbFileDesc.readline()
+        # sql += readLine
+        # # multiple inserts does not seem to be supprted.
+        # print sql.split("VALUES")[1].split(' ')
+        # # executeSql(sql)
+        # sql = ""
+        # readLine = dbFileDesc.readline()
+        sql = readLine
+        columnCount = countColumns(sql)
+        variableParams = "("
+        for count in range(columnCount):
+          variableParams += "%s"
+          if count != columnCount - 1:
+            variableParams += ","
+          else:
+            variableParams += ");"
+        sql += variableParams
+        valueList = []
+        readLine = dbFileDesc.readline().strip()
+        while readLine[-1:] == ";" or readLine[-1:] == ",":
+          readLine = tuple(readLine[1:-2].split(", "))
+          # readLine = readLine[1:-2]
+          # listValues = re.findall(r"'[a-zA-Z0-9.,/\-\+\%\`\(\)\&\# ]*'|[0-9]+", readLine)
+          # for index in range(len(listValues)):
+          #   listValues[index] = listValues[index].strip('"')
+          # tupleValues = tuple(listValues)
+          print sql
+          print readLine
+          # print tupleValues
+          print "executing:", sql % readLine
+          executeSql(sql % readLine)
+          readLine = dbFileDesc.readline().strip()
       else:
+        # move on to the next line
         readLine = dbFileDesc.readline()
 
   else:
