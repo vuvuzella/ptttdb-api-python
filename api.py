@@ -45,7 +45,7 @@ class DrugResource(Resource):
 
   def regexp(self, expr, item):
     try:
-      reg = re.compile("biogesic", re.I)
+      reg = re.compile(expr, re.I)
     except:
       print "Regexp Error occurred:"
     return reg.search(item) is not None
@@ -72,7 +72,6 @@ class DrugResource(Resource):
       print 'searching for', drugName
       # sql = 'SELECT `field1`, `drugstore`, `selling_price` FROM `tbl_calapan_mst` WHERE `field1` REGEXP `%s`'
       sql = 'SELECT field1, drugstore, selling_price FROM tbl_calapan_mst WHERE field1 REGEXP (?)'
-      drugName = "biogesic"
       cursor.execute(sql, (drugName,))
       result = cursor.fetchall()
       print "Resut:", result
