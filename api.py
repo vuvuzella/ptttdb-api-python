@@ -2,7 +2,7 @@
 A RESTful flask api for PTTT database
 """
 
-from flask import Flask
+from flask import Flask, make_response
 from flask_restful import Resource, Api
 from pymysql import cursors
 from decimal import Decimal
@@ -27,21 +27,19 @@ class DrugResource(Resource):
     drugInfo = self.getDrugInfo(drugName)
     # Retrieve the keyword argument
     print len(drugInfo)
-    strResult = ''
+    strResult = ""
     for index in range(len(drugInfo)):
       row = drugInfo[index]
       # strResult += row['field1'] + '|' + \
       # row['drugstore'] + '|' + \
       # str(row['selling_price']) + '||'
-      strResult += row[0] + "|" + \
-          row[1] + "|" + \
-          row[2] + "||"
-      # for k, v in drugInfo[index]:
-      #   row += v + ' '
-      #   row += '\n'
-      #   strResult += row
-    return strResult
-    # return {}
+      strResult += row[0] + " " +  \
+          row[2] + "\n"
+          # row[1] + "|" + \  # This is the pharmacist data
+    # To be able to set response header Content-Type to text/plain
+    response = make_response(strResult)
+    response.headers["Content-Type"] = "text/plain"
+    return response
 
   def regexp(self, expr, item):
     try:
