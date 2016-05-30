@@ -1,7 +1,7 @@
 ## PTTT database api endpoint
 ### Current api:
 
-https://heroku-pttt.herokuapp.com/pttt/v1.1/\<drug name\>
+https://heroku-pttt.herokuapp.com/pttt/v1.1/\{drugname\}
 
 Returns:
 
